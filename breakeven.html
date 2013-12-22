@@ -5,13 +5,15 @@
 		<link rel="stylesheet" type="text/css" href="css/bootstrap.css"/>
 		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript" src="js/bootstrap.js"></script>
-		<script type="text/javascript"  src="http://socketio.mtgox.com/socket.io/socket.io.js"></script>
+		<script src=http://cdn.pubnub.com/pubnub.min.js ></script>
 		<script>	
-		var conn = io.connect('http://socketio.mtgox.com/mtgox');
+		var pubnub = PUBNUB.init({
+            subscribe_key: 'sub-c-50d56e1e-2fd9-11e3-a041-02ee2ddab7fe'
+        });
 		var sound = new Audio("in1.ogg");
 		var alreadyBroken = false;
 		
-		
+				
 		function breakeven(price, fee){
 			percent = fee/100;
 			return (price / Math.pow((1-percent),2));
@@ -54,12 +56,16 @@
 				$('.icon-info-sign').popover({html:true});
 				$('.icon-info-sign').popover('toggle');
 			});
-			conn.on('message', function(data) {
-				if('ticker' in data){
-					last = data.ticker.last.value;
-					notify(last, n);
-				};
-			});
+			pubnub.subscribe({
+                channel: 'd5f06780-30a8-4a48-a2f8-7ed181b4a13f',
+                message: function (m){
+                    // does m have the same shape as data in the socket.io code
+                    if('ticker' in m){
+		    			last = m.ticker.last.value;
+	    				notify(last, n);
+	    			};
+                }
+            });
 			$("#notifyBep").click(function( event ){
 				notify(last, n);
 			});
